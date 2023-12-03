@@ -9,19 +9,19 @@ import { sameAddress } from '../helpers/address';
 const initialStats = { totalMyBuys: 0, totalMyCurrentBuys: 0, totalMyCancelled: 0, totalSold: 0 };
 
 const initialState = {
-	tickets: {},
-	stats: initialStats,
+  tickets: {},
+  stats: initialStats,
   isLoading: true,
-	onChangeTicket: () => null,
-	getMyTickets: () => ({ myBuys: [], myCancelleds: [] }),
+  onChangeTicket: () => null,
+  getMyTickets: () => ({ myBuys: [], myCancelleds: [] }),
 };
 
 interface LotteryContextValue {
-	stats: Stats;
-	tickets: TicketCells;
+  stats: Stats;
+  tickets: TicketCells;
   isLoading: boolean;
-	onChangeTicket: (id: string, nextState: TicketStatus) => void;
-	getMyTickets: () => { myBuys: string[]; myCancelleds: string[] };
+  onChangeTicket: (id: string, nextState: TicketStatus) => void;
+  getMyTickets: () => { myBuys: string[]; myCancelleds: string[] };
 }
 
 const LotteryContext = createContext<LotteryContextValue>(initialState);
@@ -30,31 +30,31 @@ export type TicketStatus = 'Available' | 'Sold' | 'PreviousBuy' | 'CurrentBuy' |
 type TicketCells = { [place: string]: TicketStatus };
 
 export interface Stats {
-	totalMyBuys: number;
+  totalMyBuys: number;
   totalMyCurrentBuys: number;
-	totalMyCancelled: number;
-	totalSold: number;
+  totalMyCancelled: number;
+  totalSold: number;
 }
 
 function LotteryProvider({ children }: any) {
-	const { address } = useAccount();
+  const { address } = useAccount();
   const [lotteryId, setLotteryId] = useState<number | false>(false);
-	const [tickets, setTickets] = useState<TicketCells>({});
-	const [stats, setStats] = useState<Stats>(initialStats);
+  const [tickets, setTickets] = useState<TicketCells>({});
+  const [stats, setStats] = useState<Stats>(initialStats);
   const [isLoading, setIsLoading]= useState<boolean>(true);
 
-	const { data } = useContractRead({
-		address: import.meta.env.VITE_LOTTERY_ADDRESS,
-		abi: lotteryAbi.abi,
-		functionName: 'getActiveLottery',
+  const { data } = useContractRead({
+    address: import.meta.env.VITE_LOTTERY_ADDRESS,
+    abi: lotteryAbi.abi,
+    functionName: 'getActiveLottery',
     watch : true
-	} as any);
+  } as any);
 
-	useEffect(() => {
-		handleReset();
-	}, []);
+  useEffect(() => {
+    handleReset();
+  }, []);
 
-	useEffect(() => {
+  useEffect(() => {
     if (Array.isArray(data)) {
       const dataLotteryId = Number((data as any)[0]);
       if (dataLotteryId !== lotteryId) {
@@ -76,57 +76,57 @@ function LotteryProvider({ children }: any) {
         return nextTickets;
       });
     }
-	}, [data]);
+  }, [data]);
 
-	useEffect(() => {
-		if (tickets === undefined) return;
-		let totalMyBuys: number = 0;
-		let totalMyCurrentBuys: number = 0;
-		let totalMyCancelled: number = 0;
-		let totalSold: number = 0;
-		Object.entries(tickets).forEach(([, status]: [string, TicketStatus]) => {
-			if (status === 'CurrentBuy') totalMyCurrentBuys++;
-			else if (status === 'PreviousBuy') totalMyBuys++;
-			else if (status === 'Cancelled') totalMyCancelled++;
-			else if (status === 'Sold') totalSold++;
-		});
-		setStats((prevStats: Stats) => ({ ...prevStats, totalMyBuys, totalMyCurrentBuys, totalMyCancelled, totalSold }));
+  useEffect(() => {
+    if (tickets === undefined) return;
+    let totalMyBuys: number = 0;
+    let totalMyCurrentBuys: number = 0;
+    let totalMyCancelled: number = 0;
+    let totalSold: number = 0;
+    Object.entries(tickets).forEach(([, status]: [string, TicketStatus]) => {
+      if (status === 'CurrentBuy') totalMyCurrentBuys++;
+      else if (status === 'PreviousBuy') totalMyBuys++;
+      else if (status === 'Cancelled') totalMyCancelled++;
+      else if (status === 'Sold') totalSold++;
+    });
+    setStats((prevStats: Stats) => ({ ...prevStats, totalMyBuys, totalMyCurrentBuys, totalMyCancelled, totalSold }));
     setTimeout(() => setIsLoading(false), 1000);
-	}, [tickets]);
+  }, [tickets]);
 
   const handleReset = () => {
     const cells: TicketCells = {};
-		for (let i = 0; i < import.meta.env.VITE_LOTTERY_MAX_TICKETS; i++) {
-			cells[i] = 'Available';
-		}
-		setTickets(cells);
+    for (let i = 0; i < import.meta.env.VITE_LOTTERY_MAX_TICKETS; i++) {
+      cells[i] = 'Available';
+    }
+    setTickets(cells);
   }
 
-	const handleOnChangeTicket = (id: string, nextState: TicketStatus) => {
-		if (tickets[id] !== 'Sold') {
-			setTickets({ ...tickets, [id]: nextState });
-		}
-	};
+  const handleOnChangeTicket = (id: string, nextState: TicketStatus) => {
+    if (tickets[id] !== 'Sold') {
+      setTickets({ ...tickets, [id]: nextState });
+    }
+  };
 
-	const handleGetMyTickets = () => {
-		const myBuys: string[] = [];
-		const myCancelleds: string[] = [];
-		Object.entries(tickets).forEach(([ticket, status]: [string, TicketStatus]) => {
-			if (status === 'CurrentBuy') myBuys.push(ticket);
-			else if (status === 'Cancelled') myCancelleds.push(ticket);
-		});
-		return { myBuys, myCancelleds };
-	};
+  const handleGetMyTickets = () => {
+    const myBuys: string[] = [];
+    const myCancelleds: string[] = [];
+    Object.entries(tickets).forEach(([ticket, status]: [string, TicketStatus]) => {
+      if (status === 'CurrentBuy') myBuys.push(ticket);
+      else if (status === 'Cancelled') myCancelleds.push(ticket);
+    });
+    return { myBuys, myCancelleds };
+  };
 
-	const value = {
-		tickets: tickets,
-		stats: stats,
+  const value = {
+    tickets: tickets,
+    stats: stats,
     isLoading,
-		getMyTickets: handleGetMyTickets,
-		onChangeTicket: handleOnChangeTicket,
-	};
+    getMyTickets: handleGetMyTickets,
+    onChangeTicket: handleOnChangeTicket,
+  };
 
-	return <LotteryContext.Provider value={value}>{children}</LotteryContext.Provider>;
+  return <LotteryContext.Provider value={value}>{children}</LotteryContext.Provider>;
 }
 
 export { LotteryContext, LotteryProvider };
