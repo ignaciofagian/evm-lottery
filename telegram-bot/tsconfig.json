@@ -1,0 +1,23 @@
+{
+  "ts-node": {  "files": true }, // add this
+  "compilerOptions": {
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "module": "commonjs",
+    "target": "ES2020",
+    "allowJs": true,
+    "experimentalDecorators": true,
+    "allowUnreachableCode": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "typeRoots": ["node_modules/@types", "typings"],
+    "baseUrl": ".",
+    "paths": {
+      "*": ["src/*"]
+    },
+    "outDir": "./dist/"
+  },
+  "include": ["src/**/*", "src/types.d.ts"]
+}
