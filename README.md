@@ -5,10 +5,9 @@ A web3 lottery game.
 - Can be set differents winner prizes 
 - Easy to change the total tickets
 
+![](screenshot-1.PNG)
 
-![](screenshot-1.png)
-
-![](screenshot-2.png)
+![](screenshot-2.PNG)
 
 ### Structure
 
